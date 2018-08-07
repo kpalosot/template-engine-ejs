@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>TinyApp</title>
+</head>
+<body>
+  <header>
+    <% include ./partials/_header %>
+  </header>
+  <ul>
+    <% Object.keys(urls).forEach((key)=> {%>
+      <li>
+        <%= key%>: <%= urls[key]%> <a href="/urls/<%= key%>">Edit</a>
+        <form action="/urls/new" method="GET">
+          <input type="submit" name="delete" value="Add new url">
+        </form>
+      </li>
+    <%});%>
+  </ul>
+</body>
+</html>
