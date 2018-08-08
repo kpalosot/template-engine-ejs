@@ -109,7 +109,7 @@ app.post("/register", (req, res) => {
     password: req.body.password
   };
 
-  if(req.body.email === "" || req.body.password){
+  if(req.body.email === "" || req.body.password === ""){
     res.sendStatus(400);
   } else {
     res.cookie("username", users[newUserID].username);
