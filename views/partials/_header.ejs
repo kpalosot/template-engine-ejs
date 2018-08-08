@@ -1,1 +1,16 @@
-<h1>HEADER!!!!</h1>
+<header>
+  <% if(username === undefined){%>
+      <h1>Welcome!!!</h1>
+      <form method="POST" action="/login">
+        <input type="text" name="username" id="username">
+        <input type="submit" name="signIn" value="Sign In">
+      </form>
+  <% } else {%>
+    <h1>Welcome <%= username%>!!!</h1>
+      <form method="POST" action="/logout">
+        <input type="submit" name="logout" value="Log Out">
+      </form>
+
+  <% }%>
+
+</header>
