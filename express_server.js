@@ -33,9 +33,14 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  let currentUserId = req.cookies["user_id"];
+  let thisEmail;// = inSession(currentUserId);;
+  if(users[currentUserId]){
+    thisEmail = users[currentUserId].email;
+  }
   let templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"],
+    username: thisEmail,
     inRegister: false
   };
 
@@ -105,14 +110,14 @@ app.post("/register", (req, res) => {
   let newUserID = uuid();
   users[newUserID] = {
     id: newUserID,
-    username: req.body.email,
+    email: req.body.email,
     password: req.body.password
   };
 
   if(req.body.email === "" || req.body.password === ""){
     res.sendStatus(400);
   } else {
-    res.cookie("username", users[newUserID].username);
+    // res.cookie("username", users[newUserID].username);
     res.cookie("user_id", newUserID);
     res.redirect("/urls");
   }
