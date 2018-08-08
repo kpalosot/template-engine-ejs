@@ -4,6 +4,9 @@
       <form method="POST" action="/login">
         <input type="text" name="username" id="username">
         <input type="submit" name="signIn" value="Sign In">
+        <% if(!inRegister) {%>
+          <input type="submit" name="register" value="Register" formmethod="GET" formaction="/register">
+        <% }%>
       </form>
   <% } else {%>
     <h1>Welcome <%= username%>!!!</h1>
