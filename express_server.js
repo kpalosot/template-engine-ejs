@@ -1,6 +1,7 @@
 var app = require("express")();
 var PORT = 8080;
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 
 var urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -8,16 +9,25 @@ var urlDatabase = {
 };
 
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 app.set("view engine", "ejs");
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
+
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = {
+    username: req.cookies["username"]
+  };
+
+  res.render("urls_new", templateVars);
 });
 
 app.post("/urls", (req, res) => {
@@ -43,8 +53,10 @@ app.post("/urls/:id/update", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id]
+    longURL: urlDatabase[req.params.id],
+    username: req.cookies["username"]
   };
+  console.log(req.cookies["username"]);
   res.render("urls_show", templateVars);
 });
 
@@ -53,23 +65,22 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+});
+
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);
-  res.send("Ok");
   res.redirect("/urls");
 });
 
 app.listen(PORT);
 console.log("Server listening at port", PORT);
 
-// code from at https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+//
 function generateRandomString(){
-  let randomString = "";
-  let possibleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-  for (var i = 0; i < 7; i++) {
-    randomString += possibleChars.charAt(Math.floor(Math.random() * possibleChars.length));
-  }
-  return randomString;
+  // shared by Andrew
+  return Math.random().toString(36).slice(2,8);
 
 }

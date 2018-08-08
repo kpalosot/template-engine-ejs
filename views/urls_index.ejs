@@ -8,14 +8,18 @@
   <ul>
     <% Object.keys(urls).forEach((key)=> {%>
       <li>
-        <%= key%>: <%= urls[key]%> <a href="/urls/<%= key%>">Edit</a>
-        <form action="/urls/<%= key%>/delete" method="POST">
-          <input type="submit" name="delete" value="Delete url">
+        <%= key%>: <%= urls[key]%>
+        <form>
+          <input type="submit" name="edit" formmethod="GET" value="Edit" formaction="/urls/<%= key%>">
+          <input type="submit" name="delete" formmethod ="POST" value="Delete" formaction="/urls/<%= key%>/delete">
         </form>
       </li>
     <%});%>
   </ul>
-  <button formaction="/urls/new" formmethod="GET">Add new link</button>
+  <form action="/urls/new" method="GET">
+    <input type="submit" value="Add new link">
+  </form>
+
 
   </form>
 
