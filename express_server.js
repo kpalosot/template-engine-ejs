@@ -2,6 +2,8 @@ var app = require("express")();
 var PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const uuid = require("uuid/v4");
+
 
 var urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -31,7 +33,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  let newKey = generateRandomString();
+  let newKey = uuid().slice(0, 6);
   while(Object.keys(urlDatabase).includes(newKey)){
     newKey = generateRandomString();
   }
@@ -77,10 +79,3 @@ app.post("/login", (req, res) => {
 
 app.listen(PORT);
 console.log("Server listening at port", PORT);
-
-//
-function generateRandomString(){
-  // shared by Andrew
-  return Math.random().toString(36).slice(2,8);
-
-}
