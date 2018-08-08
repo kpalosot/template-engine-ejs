@@ -33,14 +33,9 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let currentUserId = req.cookies["user_id"];
-  let thisEmail;// = inSession(currentUserId);;
-  if(users[currentUserId]){
-    thisEmail = users[currentUserId].email;
-  }
   let templateVars = {
     urls: urlDatabase,
-    username: thisEmail,
+    username: getEmail(req.cookies["user_id"]),
     inRegister: false
   };
 
@@ -49,7 +44,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"],
+    username: getEmail(req.cookies["user_id"]),
     inRegister: false
   };
   res.render("urls_new", templateVars);
@@ -76,7 +71,7 @@ app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id],
-    username: req.cookies["username"],
+    username: getEmail(req.cookies["user_id"]),
     inRegister: false
   };
   res.render("urls_show", templateVars);
@@ -88,7 +83,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  // res.clearCookie("username");
   res.clearCookie("user_id");
   res.redirect("/urls");
 });
@@ -100,7 +95,7 @@ app.post("/login", (req, res) => {
 
 app.get("/register", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"],
+    username: getEmail(req.cookies["user_id"]),
     inRegister: true
   };
   res.render("urls_register", templateVars);
@@ -123,6 +118,15 @@ app.post("/register", (req, res) => {
   }
 
 });
+
+function getEmail(userID){
+  // let currentUserId = req.cookies["user_id"];
+  let thisEmail;
+  if(users[userID]){
+    thisEmail = users[userID].email;
+  }
+  return thisEmail;
+}
 
 app.listen(PORT);
 console.log("Server listening at port", PORT);
