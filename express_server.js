@@ -92,12 +92,12 @@ app.get("/login", (req, res) => {
 
 app.post("/login", (req, res) => {
   let user = getUserByUsername(req.body.email);
-  if(user.id){
+  if(user && isCorrectPassword(user, req.body.password)){
     res.cookie("user_id", user.id);
+    res.redirect("/");
   } else {
     res.sendStatus(403);
   }
-  res.redirect("/urls");
 });
 
 app.get("/register", (req, res) => {
@@ -125,6 +125,14 @@ app.post("/register", (req, res) => {
 
 });
 
+app.get("/", (req, res) => {
+  res.render("urls_welcome");
+});
+
+/*
+**  HELPER FUNCTIONS!!!!
+*/
+
 function getUserByUsername(username){
   let thisUser;
   Object.keys(users).forEach((user) => {
@@ -141,6 +149,10 @@ function getUserByID(userID){
     thisUser = users[userID];
   }
   return thisUser;
+}
+
+function isCorrectPassword(user, password){
+  return user.password === password;
 }
 
 app.listen(PORT);
