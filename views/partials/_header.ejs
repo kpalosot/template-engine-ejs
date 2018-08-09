@@ -1,12 +1,16 @@
 <header>
-  <% if(username === undefined){%>
+  <% if(user === null){%>
       <h1>Welcome!!!</h1>
-      <form method="POST" action="/login">
-        <input type="text" name="username" id="username">
-        <input type="submit" name="signIn" value="Sign In">
+      <form>
+        <% if (!inLogin) {%>
+          <input type="submit" name="signIn" value="Log In" formmethod="GET" formaction="/login">
+        <% }%>
+        <% if(!inRegister) {%>
+          <input type="submit" name="register" value="Register" formmethod="GET" formaction="/register">
+        <% }%>
       </form>
   <% } else {%>
-    <h1>Welcome <%= username%>!!!</h1>
+    <h1>Welcome <%= user.email%>!!!</h1>
       <form method="POST" action="/logout">
         <input type="submit" name="logout" value="Log Out">
       </form>

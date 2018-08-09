@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <% include ./partials/_head%>
+</head>
+<body>
+  <% include ./partials/_header%>
+  <form action="/login" method="POST">
+    <input type="email" name="email" placeholder="youremail@example.com">
+    <input type="password" name="password">
+    <input type="submit" name="submit">
+  </form>
+</body>
+</html>
