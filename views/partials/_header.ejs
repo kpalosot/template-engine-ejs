@@ -1,8 +1,10 @@
 <header>
-  <% if(user === undefined){%>
+  <% if(user === null){%>
       <h1>Welcome!!!</h1>
       <form>
-        <input type="submit" name="signIn" value="Log In" formmethod="GET" formaction="/login">
+        <% if (!inLogin) {%>
+          <input type="submit" name="signIn" value="Log In" formmethod="GET" formaction="/login">
+        <% }%>
         <% if(!inRegister) {%>
           <input type="submit" name="register" value="Register" formmethod="GET" formaction="/register">
         <% }%>

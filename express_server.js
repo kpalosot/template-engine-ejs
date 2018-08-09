@@ -35,7 +35,8 @@ app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
     user: getUserByID(req.cookies["user_id"]),
-    inRegister: false
+    inRegister: false,
+    inLogin: false
   };
 
   res.render("urls_index", templateVars);
@@ -44,7 +45,8 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   let templateVars = {
     user: getUserByID(req.cookies["user_id"]),
-    inRegister: false
+    inRegister: false,
+    inLogin: false
   };
   res.render("urls_new", templateVars);
 });
@@ -71,7 +73,8 @@ app.get("/urls/:id", (req, res) => {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id],
     user: getUserByID(req.cookies["user_id"]),
-    inRegister: false
+    inRegister: false,
+    inLogin: false
   };
   res.render("urls_show", templateVars);
 });
@@ -87,11 +90,16 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.render("urls_login");
+  var templateVars = {
+    user: null,
+    inRegister: false,
+    inLogin: true
+  };
+  res.render("urls_login", templateVars);
 });
 
 app.post("/login", (req, res) => {
-  let user = getUserByUsername(req.body.email);
+  let user = getUserByEmail(req.body.email);
   if(user && isCorrectPassword(user, req.body.password)){
     res.cookie("user_id", user.id);
     res.redirect("/");
@@ -103,7 +111,8 @@ app.post("/login", (req, res) => {
 app.get("/register", (req, res) => {
   let templateVars = {
     user: getUserByID(req.cookies["user_id"]),
-    inRegister: true
+    inRegister: true,
+    inLogin: false
   };
   res.render("urls_register", templateVars);
 });
@@ -133,10 +142,10 @@ app.get("/", (req, res) => {
 **  HELPER FUNCTIONS!!!!
 */
 
-function getUserByUsername(username){
-  let thisUser;
+function getUserByEmail(email){
+  let thisUser = null;
   Object.keys(users).forEach((user) => {
-    if(users[user].email === username){
+    if(users[user].email === email){
       thisUser = users[user];
     }
   });
@@ -144,11 +153,11 @@ function getUserByUsername(username){
 }
 
 function getUserByID(userID){
-  let thisUser;
+  // let thisUser;
   if(users[userID]){
-    thisUser = users[userID];
+    return users[userID];
   }
-  return thisUser;
+  return null;
 }
 
 function isCorrectPassword(user, password){
