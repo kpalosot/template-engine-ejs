@@ -25,7 +25,6 @@ const users = {
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
-
 app.set("view engine", "ejs");
 
 app.get("/urls.json", (req, res) => {
@@ -35,7 +34,7 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    user: getUser(req.cookies["user_id"]),
+    user: getUserByID(req.cookies["user_id"]),
     inRegister: false
   };
 
@@ -44,7 +43,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    user: getUser(req.cookies["user_id"]),
+    user: getUserByID(req.cookies["user_id"]),
     inRegister: false
   };
   res.render("urls_new", templateVars);
@@ -71,7 +70,7 @@ app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id],
-    user: getUser(req.cookies["user_id"]),
+    user: getUserByID(req.cookies["user_id"]),
     inRegister: false
   };
   res.render("urls_show", templateVars);
@@ -83,16 +82,18 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  // res.clearCookie("username");
   res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
+app.get("/login", (req, res) => {
+  res.render("urls_login");
+});
+
 app.post("/login", (req, res) => {
-  // res.cookie("username", req.body.username);
-  let userID = getUserID(req.body.username);
-  if(userID){
-    res.cookie("user_id", user_id);
+  let user = getUserByUsername(req.body.email);
+  if(user.id){
+    res.cookie("user_id", user.id);
   } else {
     res.sendStatus(403);
   }
@@ -101,7 +102,7 @@ app.post("/login", (req, res) => {
 
 app.get("/register", (req, res) => {
   let templateVars = {
-    user: getUser(req.cookies["user_id"]),
+    user: getUserByID(req.cookies["user_id"]),
     inRegister: true
   };
   res.render("urls_register", templateVars);
@@ -118,32 +119,29 @@ app.post("/register", (req, res) => {
   if(req.body.email === "" || req.body.password === ""){
     res.sendStatus(400);
   } else {
-    // res.cookie("username", users[newUserID].username);
     res.cookie("user_id", newUserID);
     res.redirect("/urls");
   }
 
 });
 
-function getUserID(username){
-  let userID;
+function getUserByUsername(username){
+  let thisUser;
   Object.keys(users).forEach((user) => {
     if(users[user].email === username){
-      userID = users[user].id;
+      thisUser = users[user];
     }
   });
-  return userID;
+  return thisUser;
 }
 
-function getUser(userID){
+function getUserByID(userID){
   let thisUser;
   if(users[userID]){
     thisUser = users[userID];
   }
   return thisUser;
 }
-
-
 
 app.listen(PORT);
 console.log("Server listening at port", PORT);
