@@ -6,8 +6,12 @@ const uuid = require("uuid/v4");
 
 
 var urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "userRandomID": {
+      "b2xVn2": "http://www.lighthouselabs.ca"
+  },
+  "user2RandomID": {
+      "9sm5xK": "http://www.google.com"
+  }
 };
 
 const users = {
@@ -32,14 +36,19 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = {
-    urls: urlDatabase,
-    user: getUserByID(req.cookies["user_id"]),
-    inRegister: false,
-    inLogin: false
-  };
+  if(req.cookies["user_id"] === undefined){
+    res.redirect("/login");
+  } else {
+    let thisUser = getUserByID(req.cookies["user_id"]);
+    let templateVars = {
+      user: thisUser,
+      urls: urlDatabase[thisUser.id],
+      inRegister: false,
+      inLogin: false
+    };
 
-  res.render("urls_index", templateVars);
+    res.render("urls_index", templateVars);
+  }
 });
 
 app.get("/urls/new", (req, res) => {
@@ -59,7 +68,7 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   let newKey = uuid().slice(0, 6);
   urlDatabase[newKey] = req.body.longURL;
-  let templateVars = { urls: urlDatabase};
+  let templateVars = { urls: urlDatabase };
   res.redirect("/urls");
 });
 
@@ -69,6 +78,22 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/urls/:id/update", (req, res) => {
+  // req has user_id in cookie
+  // get that that user's urls
+  // if this req's url is of the user's urls then let them update
+  // if not, return a redirect to /urls
+
+  /*let thisUserID = req.cookies["user_id"];
+  let thisUserURLS = urlDatabase[thisUserID];
+  let thisShortURL = req.params.id;
+
+  if(thisUserURLS === undefined){
+    res.redirect("/login");
+  } else {
+    urlDatabase[req.params.id] = req.body.updateURL;
+    res.redirect("/urls");
+  }*/
+
   urlDatabase[req.params.id] = req.body.updateURL;
   res.redirect("/urls");
 });
@@ -107,7 +132,7 @@ app.post("/login", (req, res) => {
   let user = getUserByEmail(req.body.email);
   if(user && isCorrectPassword(user, req.body.password)){
     res.cookie("user_id", user.id);
-    res.redirect("/");
+    res.redirect("/urls");
   } else {
     res.sendStatus(403);
   }
