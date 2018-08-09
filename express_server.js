@@ -1,8 +1,10 @@
 var app = require("express")();
 var PORT = 8080;
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
 const uuid = require("uuid/v4");
+const bcrypt = require("bcrypt");
+const cookieSession = require("cookie-session");
+
 
 var urlDatabase = {
   "b2xVn2": {
@@ -19,17 +21,19 @@ const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: bcrypt.hashSync("purple-monkey-dinosaur", 10)
   },
  "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dishwasher-funk", 10)
   }
-}
+};
 
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(cookieSession({
+  keys: ["bfriends"]
+}));
 app.set("view engine", "ejs");
 
 app.get("/urls.json", (req, res) => {
@@ -37,13 +41,13 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  if(req.cookies["user_id"] === undefined){
+  if(req.session.user_id === undefined){
     res.redirect("/login");
   } else {
-    let thisUser = getUserByID(req.cookies["user_id"]);
+    let thisUser = getUserByID(req.session.user_id);
     let templateVars = {
       user: thisUser,
-      urls: getAllUrlsByUserId(req.cookies["user_id"]),
+      urls: getAllUrlsByUserId(req.session.user_id),
       inRegister: false,
       inLogin: false
     };
@@ -54,7 +58,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    user: getUserByID(req.cookies["user_id"]),
+    user: getUserByID(req.session.user_id),
     inRegister: false,
     inLogin: false
   };
@@ -69,15 +73,14 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   let newKey = uuid().slice(0, 6);
   urlDatabase[newKey] = {
-    id: req.cookies["user_id"],
+    id: req.session.user_id,
     longURL: req.body.longURL
   };
   res.redirect("/urls");
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  let thisUserID = req.cookies["user_id"];
-  let thisUserURLS = getAllUrlsByUserId(thisUserID);
+  let thisUserURLS = getAllUrlsByUserId(req.session.user_id);
   if(thisUserURLS === undefined){
     res.redirect("/login");
   } else {
@@ -88,8 +91,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/urls/:id/update", (req, res) => {
-  let thisUserID = req.cookies["user_id"];
-  let thisUserURLS = getAllUrlsByUserId(thisUserID);
+  let thisUserURLS = getAllUrlsByUserId(req.session.user_id);
 
   if(thisUserURLS === undefined){
     res.redirect("/login");
@@ -103,7 +105,7 @@ app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
-    user: getUserByID(req.cookies["user_id"]),
+    user: getUserByID(req.session.user_id),
     inRegister: false,
     inLogin: false
   };
@@ -116,7 +118,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect("/urls");
 });
 
@@ -131,8 +133,9 @@ app.get("/login", (req, res) => {
 
 app.post("/login", (req, res) => {
   let user = getUserByEmail(req.body.email);
-  if(user && isCorrectPassword(user, req.body.password)){
-    res.cookie("user_id", user.id);
+
+  if(user && bcrypt.compareSync(req.body.password, user.password)){
+    req.session.user_id = user.id;
     res.redirect("/urls");
   } else {
     res.sendStatus(403);
@@ -141,7 +144,7 @@ app.post("/login", (req, res) => {
 
 app.get("/register", (req, res) => {
   let templateVars = {
-    user: getUserByID(req.cookies["user_id"]),
+    user: getUserByID(req.session.user_id),
     inRegister: true,
     inLogin: false
   };
@@ -153,13 +156,13 @@ app.post("/register", (req, res) => {
   users[newUserID] = {
     id: newUserID,
     email: req.body.email,
-    password: req.body.password
+    password: bcrypt.hashSync(req.body.password, 10)
   };
 
   if(req.body.email === "" || req.body.password === ""){
     res.sendStatus(400);
   } else {
-    res.cookie("user_id", newUserID);
+    req.session.user_id = newUserID;
     res.redirect("/urls");
   }
 
@@ -188,10 +191,6 @@ function getUserByID(userID){
     return users[userID];
   }
   return null;
-}
-
-function isCorrectPassword(user, password){
-  return user.password === password;
 }
 
 function getAllUrlsByUserId(userid){
