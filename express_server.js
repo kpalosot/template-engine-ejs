@@ -78,12 +78,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/urls/:id/update", (req, res) => {
-  // req has user_id in cookie
-  // get that that user's urls
-  // if this req's url is of the user's urls then let them update
-  // if not, return a redirect to /urls
-
-  /*let thisUserID = req.cookies["user_id"];
+  let thisUserID = req.cookies["user_id"];
   let thisUserURLS = urlDatabase[thisUserID];
   let thisShortURL = req.params.id;
 
@@ -92,10 +87,7 @@ app.post("/urls/:id/update", (req, res) => {
   } else {
     urlDatabase[req.params.id] = req.body.updateURL;
     res.redirect("/urls");
-  }*/
-
-  urlDatabase[req.params.id] = req.body.updateURL;
-  res.redirect("/urls");
+  }
 });
 
 app.get("/urls/:id", (req, res) => {
