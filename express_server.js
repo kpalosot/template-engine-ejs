@@ -73,19 +73,25 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
-  res.redirect("/urls");
+  let thisUserID = req.cookies["user_id"];
+  let thisUserURLS = urlDatabase[thisUserID];
+  if(thisUserURLS === undefined){
+    res.redirect("/login");
+  } else {
+    delete urlDatabase[thisUserID][req.params.id];
+    res.redirect("/urls");
+  }
+
 });
 
 app.post("/urls/:id/update", (req, res) => {
   let thisUserID = req.cookies["user_id"];
   let thisUserURLS = urlDatabase[thisUserID];
-  let thisShortURL = req.params.id;
 
   if(thisUserURLS === undefined){
     res.redirect("/login");
   } else {
-    urlDatabase[req.params.id] = req.body.updateURL;
+    urlDatabase[thisUserID][req.params.id] = req.body.updateURL;
     res.redirect("/urls");
   }
 });
