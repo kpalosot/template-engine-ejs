@@ -169,7 +169,7 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.render("urls_welcome");
+  res.redirect("/urls");
 });
 
 /********************************************
