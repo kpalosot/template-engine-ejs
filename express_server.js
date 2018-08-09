@@ -35,7 +35,7 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    username: getEmail(req.cookies["user_id"]),
+    user: getUser(req.cookies["user_id"]),
     inRegister: false
   };
 
@@ -44,7 +44,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    username: getEmail(req.cookies["user_id"]),
+    user: getUser(req.cookies["user_id"]),
     inRegister: false
   };
   res.render("urls_new", templateVars);
@@ -71,7 +71,7 @@ app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id],
-    username: getEmail(req.cookies["user_id"]),
+    user: getUser(req.cookies["user_id"]),
     inRegister: false
   };
   res.render("urls_show", templateVars);
@@ -89,13 +89,19 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
+  // res.cookie("username", req.body.username);
+  let userID = getUserID(req.body.username);
+  if(userID){
+    res.cookie("user_id", user_id);
+  } else {
+    res.sendStatus(403);
+  }
   res.redirect("/urls");
 });
 
 app.get("/register", (req, res) => {
   let templateVars = {
-    username: getEmail(req.cookies["user_id"]),
+    user: getUser(req.cookies["user_id"]),
     inRegister: true
   };
   res.render("urls_register", templateVars);
@@ -119,14 +125,25 @@ app.post("/register", (req, res) => {
 
 });
 
-function getEmail(userID){
-  // let currentUserId = req.cookies["user_id"];
-  let thisEmail;
-  if(users[userID]){
-    thisEmail = users[userID].email;
-  }
-  return thisEmail;
+function getUserID(username){
+  let userID;
+  Object.keys(users).forEach((user) => {
+    if(users[user].email === username){
+      userID = users[user].id;
+    }
+  });
+  return userID;
 }
+
+function getUser(userID){
+  let thisUser;
+  if(users[userID]){
+    thisUser = users[userID];
+  }
+  return thisUser;
+}
+
+
 
 app.listen(PORT);
 console.log("Server listening at port", PORT);
