@@ -4,13 +4,14 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const uuid = require("uuid/v4");
 
-
 var urlDatabase = {
-  "userRandomID": {
-      "b2xVn2": "http://www.lighthouselabs.ca"
+  "b2xVn2": {
+     id: "userRandomID",
+     longURL: "http://www.lighthouselabs.ca"
   },
-  "user2RandomID": {
-      "9sm5xK": "http://www.google.com"
+  "9sm5xK": {
+      id: "user2RandomID",
+      longURL: "http://www.google.com"
   }
 };
 
@@ -42,7 +43,7 @@ app.get("/urls", (req, res) => {
     let thisUser = getUserByID(req.cookies["user_id"]);
     let templateVars = {
       user: thisUser,
-      urls: urlDatabase[thisUser.id],
+      urls: getAllUrlsByUserId(req.cookies["user_id"]),
       inRegister: false,
       inLogin: false
     };
@@ -67,18 +68,20 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   let newKey = uuid().slice(0, 6);
-  urlDatabase[newKey] = req.body.longURL;
-  let templateVars = { urls: urlDatabase };
+  urlDatabase[newKey] = {
+    id: req.cookies["user_id"],
+    longURL: req.body.longURL
+  };
   res.redirect("/urls");
 });
 
 app.post("/urls/:id/delete", (req, res) => {
   let thisUserID = req.cookies["user_id"];
-  let thisUserURLS = urlDatabase[thisUserID];
+  let thisUserURLS = getAllUrlsByUserId(thisUserID);
   if(thisUserURLS === undefined){
     res.redirect("/login");
   } else {
-    delete urlDatabase[thisUserID][req.params.id];
+    delete urlDatabase[req.params.id];
     res.redirect("/urls");
   }
 
@@ -86,12 +89,12 @@ app.post("/urls/:id/delete", (req, res) => {
 
 app.post("/urls/:id/update", (req, res) => {
   let thisUserID = req.cookies["user_id"];
-  let thisUserURLS = urlDatabase[thisUserID];
+  let thisUserURLS = getAllUrlsByUserId(thisUserID);
 
   if(thisUserURLS === undefined){
     res.redirect("/login");
   } else {
-    urlDatabase[thisUserID][req.params.id] = req.body.updateURL;
+    urlDatabase[req.params.id].longURL = req.body.updateURL;
     res.redirect("/urls");
   }
 });
@@ -99,7 +102,7 @@ app.post("/urls/:id/update", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    longURL: urlDatabase[req.params.id].longURL,
     user: getUserByID(req.cookies["user_id"]),
     inRegister: false,
     inLogin: false
@@ -108,7 +111,7 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
+  let longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
@@ -166,9 +169,9 @@ app.get("/", (req, res) => {
   res.render("urls_welcome");
 });
 
-/*
-**  HELPER FUNCTIONS!!!!
-*/
+/********************************************
+***********  HELPER FUNCTIONS!!!! ***********
+*********************************************/
 
 function getUserByEmail(email){
   let thisUser = null;
@@ -189,6 +192,16 @@ function getUserByID(userID){
 
 function isCorrectPassword(user, password){
   return user.password === password;
+}
+
+function getAllUrlsByUserId(userid){
+  let urls = {};
+  Object.keys(urlDatabase).forEach((shortURL) => {
+    if (urlDatabase[shortURL].id === userid) {
+      urls[shortURL] = urlDatabase[shortURL].longURL;
+    }
+  });
+  return urls;
 }
 
 app.listen(PORT);
