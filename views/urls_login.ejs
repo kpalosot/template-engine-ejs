@@ -5,10 +5,19 @@
 </head>
 <body>
   <% include ./partials/_header%>
+  <p>Please log in</p>
   <form action="/login" method="POST">
-    <input type="email" name="email" placeholder="youremail@example.com">
-    <input type="password" name="password">
-    <input type="submit" name="submit">
+    <div>
+      <label for="email">Email: </label>
+      <input type="email" name="email" placeholder="youremail@example.com">
+    </div>
+    <div>
+      <label for="password">Password: </label>
+      <input type="password" name="password">
+    </div>
+    <div>
+      <input type="submit" name="submit">
+    </div>
   </form>
 </body>
 </html>

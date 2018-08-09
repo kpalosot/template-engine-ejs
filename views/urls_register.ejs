@@ -6,8 +6,15 @@
 <body>
   <% include ./partials/_header%>
   <form action="/register" method="POST">
-    <input type="email" name="email" placeholder="youremail@example.com">
-    <input type="password" name="password">
+    <div>
+      <label for="email">Email: </label>
+      <input type="email" name="email" placeholder="youremail@example.com">
+    </div>
+
+    <div>
+      <label for="password">Password: </label>
+      <input type="password" name="password">
+    </div>
     <input type="submit" name="submit" value="Register">
   </form>
 
