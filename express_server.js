@@ -48,7 +48,12 @@ app.get("/urls/new", (req, res) => {
     inRegister: false,
     inLogin: false
   };
-  res.render("urls_new", templateVars);
+  if(templateVars.user === null){
+    res.redirect("/login");
+  } else {
+    res.render("urls_new", templateVars);
+  }
+
 });
 
 app.post("/urls", (req, res) => {
