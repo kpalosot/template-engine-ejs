@@ -158,7 +158,6 @@ function getUserByEmail(email){
 }
 
 function getUserByID(userID){
-  // let thisUser;
   if(users[userID]){
     return users[userID];
   }
