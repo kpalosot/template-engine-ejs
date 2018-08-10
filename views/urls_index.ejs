@@ -5,6 +5,9 @@
 </head>
 <body>
   <% include ./partials/_header %>
+  <% if(err){%>
+      <%= err%>
+  <% } %>
   <ul>
       <% Object.keys(urls).forEach((key)=> {%>
 
