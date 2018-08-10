@@ -183,7 +183,11 @@ app.get("/login", (req, res) => {
     inLogin: true,
     err: false
   };
-  res.render("urls_login", templateVars);
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    res.render("urls_login", templateVars);
+  }
 });
 
 app.post("/login", (req, res) => {
