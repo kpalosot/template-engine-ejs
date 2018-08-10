@@ -8,7 +8,8 @@ const cookieSession = require("cookie-session");
 const errorMessages = {
   "400": "Error 400: Please fill out all empty fields.",
   "401": "Error 401: Username or password is incorrect.",
-  "403": "Error 403: The page you are accessing is forbidden."
+  "403": "Error 403: The page you are accessing is forbidden.",
+  "409": "Error 409: Email already exists."
 };
 
 
@@ -50,8 +51,8 @@ app.get("/urls", (req, res) => {
   if(req.session.user_id === undefined){
     res.redirect("/login");
   } else {
-    let thisUser = getUserByID(req.session.user_id);
-    let templateVars = {
+    const thisUser = getUserByID(req.session.user_id);
+    const templateVars = {
       user: thisUser,
       urls: getAllUrlsByUserId(req.session.user_id),
       inRegister: false,
@@ -63,7 +64,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = {
+  const templateVars = {
     user: getUserByID(req.session.user_id),
     inRegister: false,
     inLogin: false,
@@ -79,7 +80,7 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   if(req.body.longURL === ""){
-    let templateVars = {
+    const templateVars = {
       user: getUserByID(req.session.user_id),
       inRegister: false,
       inLogin: false,
@@ -87,7 +88,7 @@ app.post("/urls", (req, res) => {
     };
     res.render("urls_new", templateVars);
   } else {
-    let newKey = uuid().slice(0, 6);
+    const newKey = uuid().slice(0, 6);
     urlDatabase[newKey] = {
       id: req.session.user_id,
       longURL: req.body.longURL
@@ -97,7 +98,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  let thisUserURLS = getAllUrlsByUserId(req.session.user_id);
+  const thisUserURLS = getAllUrlsByUserId(req.session.user_id);
   const templateVars = {
     inRegister: false,
     inLogin: false,
@@ -119,7 +120,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/urls/:id/update", (req, res) => {
-  let thisUserURLS = getAllUrlsByUserId(req.session.user_id);
+  const thisUserURLS = getAllUrlsByUserId(req.session.user_id);
 
   const templateVars = {
     inRegister: false,
@@ -143,13 +144,13 @@ app.post("/urls/:id/update", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
 
-  let thisUser = getUserByID(req.session.user_id);
-    let templateVars = {
-      user: thisUser,
-      urls: getAllUrlsByUserId(req.session.user_id),
-      inRegister: false,
-      inLogin: false
-    };
+  const thisUser = getUserByID(req.session.user_id);
+  const templateVars = {
+    user: thisUser,
+    urls: getAllUrlsByUserId(req.session.user_id),
+    inRegister: false,
+    inLogin: false
+  };
 
   if(urlDatabase[req.params.id].id !== req.session.user_id){
     templateVars.err = errorMessages["403"];
@@ -167,7 +168,7 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL].longURL;
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
@@ -177,7 +178,7 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  var templateVars = {
+  const templateVars = {
     user: null,
     inRegister: false,
     inLogin: true,
@@ -191,18 +192,19 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  let user = getUserByEmail(req.body.email);
+  const user = getUserByEmail(req.body.email);
 
   if(user && bcrypt.compareSync(req.body.password, user.password)){
     req.session.user_id = user.id;
     res.redirect("/urls");
   } else {
-    res.render("urls_login", {
+    const templateVars = {
       err: errorMessages["401"],
       user: null,
       inLogin: true,
       inRegister: false
-    });
+    };
+    res.render("urls_login", templateVars);
   }
 });
 
@@ -210,7 +212,7 @@ app.get("/register", (req, res) => {
   if (req.session.user_id) {
     res.redirect("/urls");
   } else {
-    let templateVars = {
+    const templateVars = {
       inRegister: true,
       inLogin: false,
       err: false,
@@ -221,25 +223,28 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  let newUserID = uuid();
-  users[newUserID] = {
-    id: newUserID,
-    email: req.body.email,
-    password: bcrypt.hashSync(req.body.password, 10)
+  const templateVars = {
+    user: null,
+    inLogin: true,
+    inRegister: false
   };
 
   if(req.body.email === "" || req.body.password === ""){
-    res.render("urls_register", {
-      err: errorMessages["400"],
-      user: null,
-      inLogin: true,
-      inRegister: false
-    });
+    templateVars["err"] = errorMessages["400"];
+    res.render("urls_register", templateVars);
+  } else if(getUserByEmail(req.body.email)){
+    templateVars["err"] = errorMessages["409"];
+    res.render("urls_register", templateVars);
   } else {
+    const newUserID = uuid();
+    users[newUserID] = {
+      id: newUserID,
+      email: req.body.email,
+      password: bcrypt.hashSync(req.body.password, 10)
+    };
     req.session.user_id = newUserID;
     res.redirect("/urls");
   }
-
 });
 
 app.get("/", (req, res) => {
