@@ -5,7 +5,9 @@
 </head>
 <body>
   <% include ./partials/_header%>
-  <p>Please log in</p>
+  <% if(err){%>
+    <%= err%>
+  <% } %>
   <form action="/login" method="POST">
     <div>
       <label for="email">Email: </label>

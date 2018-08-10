@@ -51,7 +51,6 @@ app.get("/urls", (req, res) => {
       inRegister: false,
       inLogin: false
     };
-
     res.render("urls_index", templateVars);
   }
 });
@@ -60,7 +59,8 @@ app.get("/urls/new", (req, res) => {
   let templateVars = {
     user: getUserByID(req.session.user_id),
     inRegister: false,
-    inLogin: false
+    inLogin: false,
+    err: false
   };
   if(templateVars.user === null){
     res.redirect("/login");
@@ -71,12 +71,22 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  let newKey = uuid().slice(0, 6);
-  urlDatabase[newKey] = {
-    id: req.session.user_id,
-    longURL: req.body.longURL
-  };
-  res.redirect("/urls");
+  if(req.body.longURL === ""){
+    let templateVars = {
+      user: getUserByID(req.session.user_id),
+      inRegister: false,
+      inLogin: false,
+      err: "Error 400: Please fill out all empty fields."
+    };
+    res.render("urls_new", templateVars);
+  } else {
+    let newKey = uuid().slice(0, 6);
+    urlDatabase[newKey] = {
+      id: req.session.user_id,
+      longURL: req.body.longURL
+    };
+    res.redirect("/urls");
+  }
 });
 
 app.post("/urls/:id/delete", (req, res) => {
@@ -107,9 +117,23 @@ app.get("/urls/:id", (req, res) => {
     longURL: urlDatabase[req.params.id].longURL,
     user: getUserByID(req.session.user_id),
     inRegister: false,
-    inLogin: false
+    inLogin: false,
+    err: false
   };
-  res.render("urls_show", templateVars);
+
+  // scenario: another user sent their url page
+  // to another client and client may or may not
+  // be a user
+  if(req.params.id !== req.session.user_id){
+    templateVars.err = "The page you are accessing is forbidden.";
+    if(templateVars.user === null){
+      res.render("urls_register", templateVars);
+    } else{
+      res.render("urls_login", templateVars);
+    }
+  } else {
+    res.render("urls_show", templateVars);
+  }
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -126,7 +150,8 @@ app.get("/login", (req, res) => {
   var templateVars = {
     user: null,
     inRegister: false,
-    inLogin: true
+    inLogin: true,
+    err: false
   };
   res.render("urls_login", templateVars);
 });
@@ -138,7 +163,12 @@ app.post("/login", (req, res) => {
     req.session.user_id = user.id;
     res.redirect("/urls");
   } else {
-    res.sendStatus(403);
+    res.render("urls_login", {
+      err: "Error 403: Username or password is incorrect.",
+      user: null,
+      inLogin: true,
+      inRegister: false
+    });
   }
 });
 
@@ -146,7 +176,8 @@ app.get("/register", (req, res) => {
   let templateVars = {
     user: getUserByID(req.session.user_id),
     inRegister: true,
-    inLogin: false
+    inLogin: false,
+    err: false
   };
   res.render("urls_register", templateVars);
 });
@@ -160,7 +191,12 @@ app.post("/register", (req, res) => {
   };
 
   if(req.body.email === "" || req.body.password === ""){
-    res.sendStatus(400);
+    res.render("urls_register", {
+      err: "Error 400: Please fill out all empty fields.",
+      user: null,
+      inLogin: true,
+      inRegister: false
+    });
   } else {
     req.session.user_id = newUserID;
     res.redirect("/urls");
