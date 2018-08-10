@@ -69,13 +69,8 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
 
-  //const templateVars = createBaseTemplate();
-  const templateVars = {
-    user: getUserByID(req.session.user_id),
-    inRegister: false,
-    inLogin: false,
-    err: false
-  };
+  const templateVars = createBaseTemplate();
+  templateVars.user = getUserByID(req.session.user_id);
 
   if(templateVars.user === null){
 
@@ -93,12 +88,9 @@ app.post("/urls", (req, res) => {
 
   if(req.body.longURL === ""){
 
-    const templateVars = {
-      user: getUserByID(req.session.user_id),
-      inRegister: false,
-      inLogin: false,
-      err: errorMessages["400"]
-    };
+    const templateVars = createBaseTemplate();
+    templateVars.user = getUserByID(req.session.user_id);
+    templateVars.err = errorMessages["400"];
 
     res.render("urls_new", templateVars);
 
@@ -106,10 +98,6 @@ app.post("/urls", (req, res) => {
 
     const newKey = uuid().slice(0, 6);
     let thisURL = req.body.longURL;
-
-    if (thisURL.slice(0,8) !== "http://" || thisURL.slice(0,6) !== "https://") {
-      thisURL = "https://" + thisURL;
-    }
 
     urlDatabase[newKey] = {
       id: req.session.user_id,
@@ -126,11 +114,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
   const thisUserURLS = getAllUrlsByUserId(req.session.user_id);
 
-  const templateVars = {
-    inRegister: false,
-    inLogin: false,
-    err: false
-  };
+  const templateVars = createBaseTemplate();
 
   if(thisUserURLS === {}){
 
@@ -160,11 +144,7 @@ app.post("/urls/:id/update", (req, res) => {
 
   const thisUserURLS = getAllUrlsByUserId(req.session.user_id);
 
-  const templateVars = {
-    inRegister: false,
-    inLogin: false,
-    err: false
-  };
+  const templateVars = createBaseTemplate();
 
   if(thisUserURLS === {}){
 
@@ -192,12 +172,9 @@ app.post("/urls/:id/update", (req, res) => {
 app.get("/urls/:id", (req, res) => {
 
   const thisUser = getUserByID(req.session.user_id);
-  const templateVars = {
-    user: thisUser,
-    urls: getAllUrlsByUserId(req.session.user_id),
-    inRegister: false,
-    inLogin: false
-  };
+  const templateVars = createBaseTemplate();
+  templateVars.user = thisUser;
+  templateVars.urls = getAllUrlsByUserId(req.session.user_id);
 
   if(urlDatabase[req.params.id].id !== req.session.user_id){
 
@@ -241,12 +218,9 @@ app.post("/logout", (req, res) => {
 
 app.get("/login", (req, res) => {
 
-  const templateVars = {
-    user: null,
-    inRegister: false,
-    inLogin: true,
-    err: false
-  };
+  const templateVars = createBaseTemplate();
+  templateVars.user = null;
+  templateVars.inLogin = true;
 
   if (req.session.user_id) {
 
@@ -271,12 +245,10 @@ app.post("/login", (req, res) => {
 
   } else {
 
-    const templateVars = {
-      err: errorMessages["401"],
-      user: null,
-      inLogin: true,
-      inRegister: false
-    };
+    const templateVars = createBaseTemplate();
+    templateVars.err = errorMessages["401"];
+    templateVars.user = null;
+    templateVars.inLogin = true;
 
     res.render("urls_login", templateVars);
 
@@ -292,12 +264,15 @@ app.get("/register", (req, res) => {
 
   } else {
 
-    const templateVars = {
+    const templateVars = createBaseTemplate();
+    templateVars.inRegister = true;
+    templateVars.user = null;
+    /*{
       inRegister: true,
       inLogin: false,
       err: false,
       user: null
-    };
+    };*/
 
     res.render("urls_register", templateVars);
 
@@ -307,11 +282,9 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
 
-  const templateVars = {
-    user: null,
-    inLogin: true,
-    inRegister: false
-  };
+  const templateVars = createBaseTemplate();
+  templateVars.user = null;
+  templateVars.inLogin = true;
 
   if(req.body.email === "" || req.body.password === ""){
 
