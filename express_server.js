@@ -85,7 +85,7 @@ app.post("/urls", (req, res) => {
       id: req.session.user_id,
       longURL: req.body.longURL
     };
-    res.redirect("/urls");
+    res.redirect(`/urls/${newKey}`);
   }
 });
 
@@ -124,7 +124,7 @@ app.get("/urls/:id", (req, res) => {
   // scenario: another user sent their url page
   // to another client and client may or may not
   // be a user
-  if(req.params.id !== req.session.user_id){
+  if(urlDatabase[req.params.id].id !== req.session.user_id){
     templateVars.err = "The page you are accessing is forbidden.";
     if(templateVars.user === null){
       res.render("urls_register", templateVars);
