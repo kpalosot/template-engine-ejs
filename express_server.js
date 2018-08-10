@@ -207,12 +207,17 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  let templateVars = {
-    inRegister: true,
-    inLogin: false,
-    err: false
-  };
-  res.render("urls_register", templateVars);
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    let templateVars = {
+      inRegister: true,
+      inLogin: false,
+      err: false,
+      user: null
+    };
+    res.render("urls_register", templateVars);
+  }
 });
 
 app.post("/register", (req, res) => {
