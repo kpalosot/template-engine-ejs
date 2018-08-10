@@ -103,8 +103,14 @@ app.post("/urls/:id/delete", (req, res) => {
     inLogin: false,
     err: false
   };
-  if(thisUserURLS === null){
-    res.redirect("/login");
+  if(thisUserURLS === {}){
+    templateVars.inRegister = true;
+    res.render("urls_register", templateVars);
+  } else if(!Object.keys(thisUserURLS).includes(req.params.id)){
+    templateVars["user"] = getUserByID(req.session.user_id);
+    templateVars.inLogin = true;
+    templateVars.err = errorMessages["403"];
+    res.render("urls_index", templateVars);
   } else {
     delete urlDatabase[req.params.id];
     res.redirect("/urls");
