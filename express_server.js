@@ -267,12 +267,6 @@ app.get("/register", (req, res) => {
     const templateVars = createBaseTemplate();
     templateVars.inRegister = true;
     templateVars.user = null;
-    /*{
-      inRegister: true,
-      inLogin: false,
-      err: false,
-      user: null
-    };*/
 
     res.render("urls_register", templateVars);
 
